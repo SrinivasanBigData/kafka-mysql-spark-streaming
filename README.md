@@ -1,7 +1,7 @@
 # kafka-mysql-spark-streaming
 This repository will go a bit deeper into Kafka. On one side, I have MySQL data. On the other side, I have Spark. How can I stream my MySQL database into Spark with Scala ? Well, Kafka seems to be a pretty good solution.
 
-##Our environment
+## Our environment
 
 To be able to use Kafka to stream MySQL data to Spark, we will need a couple of services. Basically, we will need a kafka and a zookeeper services. Of course, we will also need a Spark, and a MySQL service. The thing is that will also need a Maven service. I will explain a bit later why.
 
@@ -75,7 +75,19 @@ Finally, we have a maven service, also standard configuration.
 
 ## Setup IP of your Kafka container
 
-We need to set up the value of the environment variable KAFKA_ADVERTISED_HOST_NAME. This value shall be the IP of the container. To do so, I propose you read my previous post about Kafka where I explain in details how to set it.
+Before starting your kafka connect, you need to set the Kafka container’s IP adress into the KAFKA_ADVERTISED_HOSTNAME environment variable. You shall first connect to your Kafka container :
+
+        $ docker exec -it kafka /bin/sh
+        
+Then, fetch the container’s IP adress, and update the KAFKA_ADVERTISED_HOSTNAME environment variable :
+
+        / # echo $KAFKA_ADVERTISED_HOST_NAME
+        127.0.0.1
+        / # /sbin/ip route|awk '/default/ { print $3 }'
+        172.21.0.1
+        / # export KAFKA_ADVERTISED_HOST_NAME=172.21.0.1
+        / # echo $KAFKA_ADVERTISED_HOST_NAME
+        172.21.0.1
 
 ## Build Kafka MySQL connectors
 
@@ -200,7 +212,9 @@ ssc.start()
 ```
 The streaming is launched. The last thing to do is insert data into your MySQL database. In the previous mysql container console, type in the following :
 
-    INSERT INTO accounts VALUES (1, "John"), (2, "Sandy");
+```sql
+INSERT INTO accounts VALUES (1, "John"), (2, "Sandy");
+```
 
 Go back to the Spark container console, and look carefully :
 
